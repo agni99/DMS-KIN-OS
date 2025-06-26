@@ -69,7 +69,7 @@ class OpenSearchStack(Stack):
       domain_name=opensearch_domain_name,
       #XXX: Supported versions of OpenSearch and Elasticsearch
       # https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html#choosing-version
-      version=aws_opensearchservice.EngineVersion.OPENSEARCH_1_3,
+      version=aws_opensearchservice.EngineVersion.OPENSEARCH_2_5,
       #XXX: You cannot use graviton instances with non-graviton instances.
       # Use graviton instances as data nodes or use non-graviton instances as master nodes.
       capacity={

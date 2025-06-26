@@ -1,11 +1,19 @@
 {
-  "db_cluster_name": "Your-DB-Cluster-Name",
+  "db_cluster_name": "database-1",
   "dms_data_source": {
     "database_name": "testdb",
     "table_name": "retail_trans"
   },
-  "kinesis_stream_name": "Your-DMS-Target-Kinesis-Stream-Name",
-  "opensearch_domain_name": "Your-OpenSearch-Domain-Name",
-  "opensearch_index_name": "Your-opensearch-Index-Name",
-  "ec2_key_pair_name": "Your-EC2-Key-Pair-Name (exclude .pem extension)"
+  "kinesis_stream_name": "dte-kinesis-stream",
+  "opensearch_domain_name": "dte-opensearch-domain",
+  "opensearch_index_name": "dte-opensearch-index",
+  "ec2_key_pair_name": "my-key-pair",
+  "availability-zones:account=647710446790:region=us-east-1": [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c",
+    "us-east-1d",
+    "us-east-1e",
+    "us-east-1f"
+  ]
 }

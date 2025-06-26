@@ -6,8 +6,11 @@ import aws_cdk as cdk
 from cdk_stacks import (
   VpcStack,
   AuroraMysqlStack,
+  AuroraPostgresStack,
   KinesisDataStreamStack,
   DmsIAMRolesStack,
+ #DMSAuroraMysqlToKinesisStack,
+  DMSAuroraPostgresToKinesisStack,
   DMSAuroraMysqlToKinesisStack,
   OpenSearchStack,
   KinesisFirehoseStack,
@@ -24,18 +27,25 @@ app = cdk.App()
 vpc_stack = VpcStack(app, 'VpcStack',
   env=APP_ENV)
 
+'''
 aurora_mysql_stack = AuroraMysqlStack(app, 'AuroraMysqlStack',
   vpc_stack.vpc,
   env=APP_ENV
 )
 aurora_mysql_stack.add_dependency(vpc_stack)
+'''
+aurora_postgres_stack = AuroraPostgresStack(app, 'AuroraPostgresStack',
+  vpc_stack.vpc,
+  env=APP_ENV
+)
+aurora_postgres_stack.add_dependency(vpc_stack)
 
 bastion_host = BastionHostEC2InstanceStack(app, 'AuroraMysqlBastionHost',
   vpc_stack.vpc,
-  aurora_mysql_stack.sg_mysql_client,
+  aurora_postgres_stack.sg_postgres_client,
   env=APP_ENV
 )
-bastion_host.add_dependency(aurora_mysql_stack)
+bastion_host.add_dependency(aurora_postgres_stack)
 
 kds_stack = KinesisDataStreamStack(app, 'DMSTargetKinesisDataStreamStack')
 kds_stack.add_dependency(bastion_host)
@@ -43,6 +53,7 @@ kds_stack.add_dependency(bastion_host)
 dms_iam_permissions = DmsIAMRolesStack(app, 'DMSRequiredIAMRolesStack')
 dms_iam_permissions.add_dependency(kds_stack)
 
+'''
 dms_stack = DMSAuroraMysqlToKinesisStack(app, 'DMSAuroraMysqlToKinesisStack',
   vpc_stack.vpc,
   aurora_mysql_stack.sg_mysql_client,
@@ -52,13 +63,23 @@ dms_stack = DMSAuroraMysqlToKinesisStack(app, 'DMSAuroraMysqlToKinesisStack',
   env=APP_ENV
 )
 dms_stack.add_dependency(dms_iam_permissions)
+'''
+dms_stack_postgres = DMSAuroraPostgresToKinesisStack(app,'DMSAuroraPostgresToKinesisStack',
+  vpc_stack.vpc,
+  aurora_postgres_stack.sg_postgres_client,
+  aurora_postgres_stack.db_secret,
+  aurora_postgres_stack.db_hostname,
+  kds_stack.kinesis_stream_arn,
+  env=APP_ENV
+)
+dms_stack_postgres.add_dependency(dms_iam_permissions)
 
 ops_stack = OpenSearchStack(app, 'OpenSearchStack',
   vpc_stack.vpc,
   bastion_host.sg_bastion_host,
   env=APP_ENV
 )
-ops_stack.add_dependency(dms_stack)
+ops_stack.add_dependency(dms_stack_postgres)
 
 firehose_stack = KinesisFirehoseStack(app, 'FirehoseStack',
   vpc_stack.vpc,

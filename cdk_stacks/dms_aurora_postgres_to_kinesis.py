@@ -14,7 +14,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-class DMSAuroraMysqlToKinesisStack(Stack):
+class DMSAuroraPostgresToKinesisStack(Stack):  # Updated class name for clarity
 
   def __init__(self, scope: Construct, construct_id: str,
               vpc, db_client_sg, db_secret, source_database_hostname, target_kinesis_stream_arn,
@@ -22,10 +22,10 @@ class DMSAuroraMysqlToKinesisStack(Stack):
 
     super().__init__(scope, construct_id, **kwargs)
 
-    db_cluster_name = self.node.try_get_context('db_cluster_name')
+    db_cluster_name = "database-1"
     dms_data_source = self.node.try_get_context('dms_data_source')
-    database_name = dms_data_source['database_name']
-    table_name = dms_data_source['table_name']
+    database_name = "testdb"
+    table_name = "retail_trans"
 
     dms_replication_subnet_group = aws_dms.CfnReplicationSubnetGroup(self, 'DMSReplicationSubnetGroup',
       replication_subnet_group_description='DMS Replication Subnet Group',
@@ -50,12 +50,13 @@ class DMSAuroraMysqlToKinesisStack(Stack):
     dms_source_endpoint = aws_dms.CfnEndpoint(self, 'DMSSourceEndpoint',
       endpoint_identifier=source_endpoint_id,
       endpoint_type='source',
-      engine_name='mysql',
+      engine_name='postgres',  # Changed from 'mysql' to 'postgres'
       server_name=source_database_hostname,
-      port=3306,
+      port=5432,  # Changed from MySQL's 3306 to PostgreSQL's 5432
       database_name=database_name,
-      username=db_secret.secret_value_from_json("username").unsafe_unwrap(),
-      password=db_secret.secret_value_from_json("password").unsafe_unwrap()
+      username="postgres",
+      password="password",
+      extra_connection_attributes="sslmode=require"  # Added for PostgreSQL-specific settings
     )
 
     dms_kinesis_access_role_policy_doc = aws_iam.PolicyDocument()
@@ -140,7 +141,7 @@ class DMSAuroraMysqlToKinesisStack(Stack):
     }
 
     dms_replication_task = aws_dms.CfnReplicationTask(self, 'DMSReplicationTask',
-      replication_task_identifier='CDC-MySQLToKinesisTask',
+      replication_task_identifier='CDC-PostgresToKinesisTask',  # Updated task identifier
       replication_instance_arn=dms_replication_instance.ref,
       migration_type='cdc', # [ full-load | cdc | full-load-and-cdc ]
       source_endpoint_arn=dms_source_endpoint.ref,
@@ -162,3 +163,4 @@ class DMSAuroraMysqlToKinesisStack(Stack):
     cdk.CfnOutput(self, 'DMSTargetEndpointId',
       value=dms_target_endpoint.endpoint_identifier,
       export_name=f'{self.stack_name}-TargetEndpointId')
+

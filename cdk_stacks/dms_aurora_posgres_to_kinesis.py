@@ -38,7 +38,7 @@ class DMSAuroraMysqlToKinesisStack(Stack):
       allocated_storage=50,
       allow_major_version_upgrade=False,
       auto_minor_version_upgrade=False,
-      engine_version='3.5.3',
+      engine_version='3.4.6',
       multi_az=False,
       preferred_maintenance_window='sat:03:17-sat:03:47',
       publicly_accessible=False,
@@ -47,16 +47,16 @@ class DMSAuroraMysqlToKinesisStack(Stack):
     )
 
     source_endpoint_id = db_cluster_name
-    dms_source_endpoint = aws_dms.CfnEndpoint(self, 'DMSSourceEndpoint',
-      endpoint_identifier=source_endpoint_id,
-      endpoint_type='source',
-      engine_name='mysql',
-      server_name=source_database_hostname,
-      port=3306,
-      database_name=database_name,
-      username=db_secret.secret_value_from_json("username").unsafe_unwrap(),
-      password=db_secret.secret_value_from_json("password").unsafe_unwrap()
-    )
+dms_source_endpoint = aws_dms.CfnEndpoint(self, 'DMSSourceEndpoint',
+  endpoint_identifier=source_endpoint_id,
+  endpoint_type='source',
+  engine_name='postgres',  # Change from 'mysql' to 'postgres'
+  server_name=source_database_hostname,
+  port=5432,  # Change from 3306 to 5432
+  database_name=database_name,
+  username="postgres",
+  password="password"
+)
 
     dms_kinesis_access_role_policy_doc = aws_iam.PolicyDocument()
     dms_kinesis_access_role_policy_doc.add_statements(aws_iam.PolicyStatement(**{
