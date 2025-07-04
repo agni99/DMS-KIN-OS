@@ -100,7 +100,7 @@ class DMSAuroraPostgresToKinesisStack(Stack):  # Updated class name for clarity
           "rule-id": "1",
           "rule-name": "1",
           "object-locator": {
-            "schema-name": database_name,
+            "schema-name": "public",
             "table-name": table_name
           },
           "rule-action": "include",
@@ -112,7 +112,7 @@ class DMSAuroraPostgresToKinesisStack(Stack):  # Updated class name for clarity
           "rule-name": "DefaultMapToKinesis",
           "rule-action": "map-record-to-record",
           "object-locator": {
-            "schema-name": database_name,
+            "schema-name": "public",
             "table-name": table_name
           }
         }
